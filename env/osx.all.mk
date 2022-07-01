@@ -2,10 +2,9 @@ CC := clang++
 CFLAGS := $(CFLAGS:-s=)
 
 LIB_DIRS := \
-	/usr/local/lib
-
+	/opt/homebrew/Cellar/sfml/3.0.0/lib/
 INCLUDE_DIRS := \
-	/usr/local/include
+	/opt/homebrew/Cellar/sfml/3.0.0/include/
 
 BUILD_FLAGS :=
 
@@ -29,11 +28,11 @@ PRODUCTION_MACOS_MAKE_DMG := true
 PRODUCTION_MACOS_BACKGROUND := dmg-background
 
 PRODUCTION_MACOS_DYLIBS := \
-	/usr/local/lib/libsfml-graphics.2.5 \
-	/usr/local/lib/libsfml-audio.2.5 \
-	/usr/local/lib/libsfml-network.2.5 \
-	/usr/local/lib/libsfml-window.2.5 \
-	/usr/local/lib/libsfml-system.2.5
+	/opt/homebrew/Cellar/sfml/3.0.0/lib/libsfml-graphics \
+	/opt/homebrew/Cellar/sfml/3.0.0/lib/libsfml-audio \
+	/opt/homebrew/Cellar/sfml/3.0.0/lib/libsfml-network \
+	/opt/homebrew/Cellar/sfml/3.0.0/lib/libsfml-window \
+	/opt/homebrew/Cellar/sfml/3.0.0/lib/libsfml-system
 
 # Path, no extension (eg. /Library/Frameworks/ogg)
 PRODUCTION_MACOS_FRAMEWORKS :=

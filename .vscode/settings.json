@@ -7,7 +7,7 @@
 	"debug.toolBarLocation": "docked",
 	"editor.tabSize": 4,
 	"editor.insertSpaces": false,
-	"editor.formatOnSave": true,
+	"editor.formatOnSave": false,
 	"files.encoding": "utf8",
 	"files.trimTrailingWhitespace": true,
 	"files.eol": "\n",
@@ -25,7 +25,8 @@
 		"*.json": "jsonc",
 		"*.stats": "cpp",
 		"*.desktop": "properties",
-		".clang-format": "yaml"
+		".clang-format": "yaml",
+		"filesystem": "cpp"
 	},
 	// "terminal.integrated.defaultProfile.windows": "Git Bash",
 	"terminal.integrated.env.windows": {

@@ -25,11 +25,12 @@
 		"*.json": "jsonc",
 		"*.stats": "cpp",
 		"*.desktop": "properties",
-		".clang-format": "yaml"
+		".clang-format": "yaml",
+		"iostream": "cpp"
 	},
 	// "terminal.integrated.defaultProfile.windows": "Git Bash",
 	"terminal.integrated.env.windows": {
-		"Path": "C:/mingw32/bin;C:/SFML-2.5.1/bin"
+		"Path": "C:/msys64/ming64/bin;C:/programming/SFML/bin"
 	},
 	"terminal.integrated.env.linux": {
 		"PATH": "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"

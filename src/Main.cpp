@@ -66,17 +66,6 @@ int main()
 		sf::Vector2f newPosition = previousPosition + moveVector;
 		circle.setPosition(newPosition);
 
-		if (previousPosition.y < 0.0f)
-		{
-			circleMoveSpeedY *= -1.0f;
-		} else if (previousPosition.y > wHeight - circle.getRadius()*2)
-		{
-			circleMoveSpeedY *= -1.0f;
-		}
-
-		sf::Vector2f moveVector(circleMoveSpeedX, circleMoveSpeedY);
-		sf::Vector2f newPosition = previousPosition + moveVector;
-
 		circle.setPosition(newPosition);
 
 		window.clear();

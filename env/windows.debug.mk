@@ -1,8 +1,8 @@
 LINK_LIBRARIES := \
-	sfml-graphics-d \
-	sfml-audio-d \
-	sfml-network-d \
-	sfml-window-d \
-	sfml-system-d \
+	sfml-graphics \
+	sfml-audio \
+	sfml-network \
+	sfml-window \
+	sfml-system \
 	stdc++fs \
 	gdi32

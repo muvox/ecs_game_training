@@ -1,11 +1,11 @@
-CC := g++.exe
+CC := g++
 
-_MINGW := C:/mingw32/bin
-_SFML := C:/SFML-2.5.1
-_SFML_BIN := $(_SFML)/bin
+_MINGW := C:/msys64/mingw64
+_SFML := C:/programming/SFML
+_SFML_BIN := $(_SFML)/build/lib
 
 LIB_DIRS := \
-	$(_SFML)/lib
+	$(_SFML)/build/lib
 
 INCLUDE_DIRS := \
 	$(_SFML)/include
@@ -24,8 +24,8 @@ PRODUCTION_DEPENDENCIES := \
 	$(_MINGW)/libstdc++-6.dll \
 	$(_MINGW)/libwinpthread-1.dll \
 	$(_SFML_BIN)/openal32.dll \
-	$(_SFML_BIN)/sfml-audio-2.dll \
-	$(_SFML_BIN)/sfml-graphics-2.dll \
-	$(_SFML_BIN)/sfml-network-2.dll \
-	$(_SFML_BIN)/sfml-system-2.dll \
-	$(_SFML_BIN)/sfml-window-2.dll
+	$(_SFML_BIN)/sfml-audio-3.dll \
+	$(_SFML_BIN)/sfml-graphics-3.dll \
+	$(_SFML_BIN)/sfml-network-3.dll \
+	$(_SFML_BIN)/sfml-system-3.dll \
+	$(_SFML_BIN)/sfml-window-3.dll

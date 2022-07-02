@@ -1,5 +1,21 @@
 #include "Platform/Platform.hpp"
 #include <iostream>
+#include <fstream>
+
+class CShape
+{
+	public:
+		float x, y;
+		float sx, sy;
+		int r, g, b;
+		float sizeX, sizeY;
+		std::string shape;
+
+		CShape(){};
+		CShape(float initX, float initY, float speedX, float speedY, int red, int green, int blue, float sizeX, float sizeY, std::string shape)
+			: x(initX), y(initY), sx(speedX), sy(speedY), r(red), g(green), b(blue), sizeX(sizeX), sizeY(sizeY), shape(shape) {};
+
+};
 
 int main()
 {
@@ -23,8 +39,8 @@ int main()
 	sf::Color circleColor = sf::Color::Yellow;
 	circle.setFillColor(circleColor);
 
-	float circleMoveSpeedX = -0.90f;
-	float circleMoveSpeedY = -0.90f;
+	float circleMoveSpeedX = -0.10f;
+	float circleMoveSpeedY = -0.10f;
 	sf::Event event;
 
 	// Main loop

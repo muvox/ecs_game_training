@@ -9,23 +9,24 @@ using namespace std;
 
 class CShape
 {
+    public:
         float x, y;
         float sx, sy;
         int r, g, b;
-        float sizeX, sizeY;
+        float width, height;
         float rad;
         string shape;
         string name;
-
-    public:
+        sf::RectangleShape square;
+        sf::CircleShape circle;
 
         CShape(){};
 
         CShape(	float initX, float initY, float speedX, float speedY,
-                int red, int green, int blue, float sizeX, float sizeY,
+                int red, int green, int blue, float width, float height,
                 string shape, string name)
             : 	x(initX), y(initY), sx(speedX), sy(speedY), r(red), g(green),
-                b(blue),  sizeX(sizeX), sizeY(sizeY), shape(shape), name(name) {};
+                b(blue),  width(width), height(height), shape(shape), name(name) {};
 
         CShape(	float initX, float initY, float speedX, float speedY,
                 int red, int green, int blue, float radius,
@@ -46,14 +47,14 @@ ostream& operator<<(ostream& os, const CShape& c)
     os << "Speed: " << c.sx << ", " << c.sy << endl;
     os << "RGB: " << c.r << ", " << c.g << ", " << c.b << endl;
     if(c.shape == "Rectangle")
-        os << "Size: " << c.sizeX << ", " << c.sizeY << endl;
+        os << "Size: " << c.width << ", " << c.height << endl;
     else
         os << "Radius: " << c.rad << endl;
     os << "############################" << endl;
     return os;
 }
 
-void constructShapes(string shape, istringstream * pConfigLine, vector<CShape> * pShapes);
+void generateShapes(string shape, istringstream * pConfigLine, vector<CShape> * pShapes);
 
 int main()
 {
@@ -121,8 +122,8 @@ int main()
             }
             else if(variable.length() != 0)
             {
-                cout << "printing variable: " << variable << endl;
-                constructShapes(variable ,&iss, &shapes);
+                //cout << "printing variable: " << variable << endl;
+                generateShapes(variable ,&iss, &shapes);
             }
 
         } while (iss);
@@ -130,8 +131,26 @@ int main()
     }
 
     for (CShape &s: shapes)
-        cout << s;
+    {
+        if (s.shape == "Circle")
+        {
+            sf::CircleShape c(s.rad);
+            c.setFillColor(sf::Color(s.r, s.g, s.b));
+            sf::Vector2f posVector(s.x, s.y);
+            c.setPosition(posVector);
+            s.circle = c;
+        }
+        else
+        {
+            sf::Vector2f sizeVector(s.width, s.height);
+            sf::RectangleShape r(sizeVector);
+            r.setFillColor(sf::Color(s.r, s.g, s.b));
+            sf::Vector2f posVector(s.x, s.y);
+            r.setPosition(posVector);
+            s.square = r;
+        }
 
+    }
 
 
     // idea, initialize i, if first window, set window props, i+ and then loop through shapese
@@ -143,7 +162,6 @@ int main()
     // in Windows at least, this must be called before creating the window
     // float screenScalingFactor = platform.getScreenScalingFactor(window.getSystemHandle());
     // Use the screenScalingFactor
-    // window.create(sf::VideoMode(200.0f * screenScalingFactor, 200.0f * screenScalingFactor), "SFML works!");
     platform.setIcon(window.getSystemHandle());
 
     sf::CircleShape circle(20);
@@ -153,8 +171,8 @@ int main()
     sf::Color circleColor = sf::Color::Yellow;
     circle.setFillColor(circleColor);
 
-    float circleMoveSpeedX = -0.10f;
-    float circleMoveSpeedY = -0.10f;
+    // float circleMoveSpeedX = -0.10f;
+    // float circleMoveSpeedY = -0.10f;
     sf::Event event;
 
     // Main loop
@@ -170,43 +188,95 @@ int main()
         }
 
 
-        sf::Vector2f previousPosition = circle.getPosition();
-        if (previousPosition.x < 0.0f)
-        {
-            circleMoveSpeedX *= -1.0f;
-        } else if (previousPosition.x > wWidth - circle.getRadius()*2)
-        {
-            circleMoveSpeedX *= -1.0f;
-        }
-        else if (previousPosition.x > wWidth - (circle.getRadius() * 2))
-        {
-            circleMoveSpeedX *= -1.0f;
-        }
-
-        if (previousPosition.y < 0)
-        {
-            circleMoveSpeedY *= -1.0f;
-        }
-        else if (previousPosition.y > wHeight - (circle.getRadius() * 2))
-        {
-            circleMoveSpeedY *= -1.0f;
-        }
-
-        sf::Vector2f moveVector = sf::Vector2f(circleMoveSpeedX, circleMoveSpeedY * 1.1f);
-        sf::Vector2f newPosition = previousPosition + moveVector;
-        circle.setPosition(newPosition);
-
-        circle.setPosition(newPosition);
-
         window.clear();
-        window.draw(circle);
+
+        for(CShape &s: shapes)
+        {
+            sf::Vector2f previousPosition;
+
+            if(s.shape == "Rectangle")
+            {
+                previousPosition = s.square.getPosition();
+                if (previousPosition.x < 0.0f)
+                    s.sx *= -1.0f;
+                else if (previousPosition.x > wWidth - s.width)
+                    s.sx *= -1.0f;
+
+                if (previousPosition.y < 0.0f)
+                    s.sy *= -1.0f;
+                else if (previousPosition.y > wHeight - s.height)
+                    s.sy *= -1.0f;
+            }
+
+            else
+            {
+                previousPosition = s.circle.getPosition();
+                if (previousPosition.x < 0.0f)
+                    s.sx *= -1.0f;
+                else if (previousPosition.x > wWidth - (s.rad * 2))
+                    s.sx *= -1.0f;
+
+                if (previousPosition.y < 0.0f)
+                    s.sy *= -1.0f;
+                else if (previousPosition.y > wHeight - (s.rad * 2))
+                    s.sy *= -1.0f;
+
+            }
+
+            sf::Vector2f moveVector = sf::Vector2f(s.sx, s.sy);
+            sf::Vector2f newPosition = previousPosition + moveVector;
+
+            if(s.shape == "Rectangle")
+            {
+                s.square.setPosition(newPosition);
+                s.x = newPosition.x;
+                s.y = newPosition.y;
+                window.draw(s.square);
+
+            }
+            else
+            {
+                s.circle.setPosition(newPosition);
+                s.x = newPosition.x;
+                s.y = newPosition.y;
+                window.draw(s.circle);
+            }
+
+        }
+
         window.display();
+        // sf::Vector2f previousPosition = circle.getPosition();
+        // if (previousPosition.x < 0.0f)
+        // {
+        //     circleMoveSpeedX *= -1.0f;
+        // } else if (previousPosition.x > wWidth - circle.getRadius()*2)
+        // {
+        //     circleMoveSpeedX *= -1.0f;
+        // }
+        // else if (previousPosition.x > wWidth - (circle.getRadius() * 2))
+        // {
+        //     circleMoveSpeedX *= -1.0f;
+        // }
+
+        // if (previousPosition.y < 0)
+        // {
+        //     circleMoveSpeedY *= -1.0f;
+        // }
+        // else if (previousPosition.y > wHeight - (circle.getRadius() * 2))
+        // {
+        //     circleMoveSpeedY *= -1.0f;
+        // }
+
+        // sf::Vector2f moveVector = sf::Vector2f(circleMoveSpeedX, circleMoveSpeedY * 1.1f);
+        // sf::Vector2f newPosition = previousPosition + moveVector;
+        // circle.setPosition(newPosition);
+
     }
 
     return 0;
 }
 
-void constructShapes(string shape, istringstream * configLine, vector<CShape> * pShapes)
+void generateShapes(string shape, istringstream * configLine, vector<CShape> * pShapes)
 {
 
     string name;
@@ -222,34 +292,17 @@ void constructShapes(string shape, istringstream * configLine, vector<CShape> * 
     float radius;
 
     *configLine >> name;
-        cout << "Name: " << name << endl;
     *configLine >> initialX;
-        cout << "x: " << initialX << endl;
-
     *configLine >> initialY;
-        cout << "x: " <<initialY << endl;
-
     *configLine >> initialSpeedX;
-        cout << "x: " <<initialSpeedX << endl;
-
     *configLine >> initialSpeedY;
-        cout << "x: " <<initialSpeedY << endl;
-
     *configLine >> red;
-        cout << "x: " <<red << endl;
-
     *configLine >> green;
-        cout << "x: " <<green << endl;
-
     *configLine >> blue;
-        cout << "x: " << blue << endl;
-
     if (shape == "Rectangle")
     {
         *configLine >> width;
         *configLine >> height;
-        cout << "height: " << height << ", width: " << width << endl;
-
         CShape newShape(initialX, initialY, initialSpeedX,
                         initialSpeedY, red, green, blue,
                         width, height, shape, name);
@@ -258,12 +311,9 @@ void constructShapes(string shape, istringstream * configLine, vector<CShape> * 
     else
     {
         *configLine >> radius;
-        cout << "Radius: " << radius << endl;
         CShape newShape(initialX, initialY, initialSpeedX,
                         initialSpeedY, red, green, blue,
                         radius, shape, name);
         pShapes->push_back(newShape);
     }
-
-    // cout << variable << endl;
 }

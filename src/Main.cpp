@@ -55,15 +55,21 @@ ostream& operator<<(ostream& os, const CShape& c)
 }
 
 void generateShapes(string shape, istringstream * pConfigLine, vector<CShape> * pShapes);
+void configure(unsigned int * width, unsigned int * height);
 
 int main()
 {
     string filename("content/config");
+
     util::Platform platform;
 
     unsigned int wWidth = 640;
     unsigned int wHeight = 480;
 
+    unsigned int * pWidth = &wWidth;
+    unsigned int * pHeight = &wHeight;
+
+    configure(pWidth, pHeight);
 
     vector<string> lines;
     vector<CShape> shapes;
@@ -316,4 +322,9 @@ void generateShapes(string shape, istringstream * configLine, vector<CShape> * p
                         radius, shape, name);
         pShapes->push_back(newShape);
     }
+}
+
+void configure(unsigned int * width, unsigned int * height)
+{
+    cout << *width << " " << *height << endl;
 }

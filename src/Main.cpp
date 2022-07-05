@@ -55,130 +55,29 @@ ostream& operator<<(ostream& os, const CShape& c)
 }
 
 void generateShapes(string shape, istringstream * pConfigLine, vector<CShape> * pShapes);
-void configure(unsigned int * width, unsigned int * height);
+bool configure(unsigned int * width, unsigned int * height, vector<string> * lines, vector<CShape> * shapes);
 
 int main()
 {
-    string filename("content/config");
 
     util::Platform platform;
 
     unsigned int wWidth = 640;
     unsigned int wHeight = 480;
 
-    unsigned int * pWidth = &wWidth;
-    unsigned int * pHeight = &wHeight;
-
-    configure(pWidth, pHeight);
-
     vector<string> lines;
     vector<CShape> shapes;
-    string line;
 
-    // open the file
-    ifstream inFile(filename);
-    if (!inFile.is_open())
-    {
-        cerr << "Could not open the file - " << filename << endl;
-        return EXIT_FAILURE;
-    }
-    else
-    {
-        // slap all the lines to a nice vector
-        while (getline(inFile, line))
-        {
-            if(line.size() > 0)
-                lines.push_back(line);
-        }
-    }
-
-    cout << "printingline to see what tht efuck" << endl;
-    for (auto l = lines.begin(); l != lines.end(); ++l)
-    {
-        istringstream iss(*l);
-
-        cout << "line: " << iss.str() << endl;
-    }
-
-    // set up config
-    for (auto l = lines.begin(); l != lines.end(); ++l)
-    {
-        //cout << *l << endl;
-
-        // int i = 0;
-
-        istringstream iss(*l);
-
-        do
-        {
-            string variable;
-
-            iss >> variable;
-
-            //cout << variable << endl;
-
-            // If first string is Window, next two are width and height
-            if(variable == "Window")
-            {
-                //cout << "Ooh, lala!" << endl;
-                iss >> variable;
-                wWidth = stoi(variable);
-                iss >> variable;
-                wHeight = stoi(variable);
-            }
-            else if(variable.length() != 0)
-            {
-                //cout << "printing variable: " << variable << endl;
-                generateShapes(variable ,&iss, &shapes);
-            }
-
-        } while (iss);
-
-    }
-
-    for (CShape &s: shapes)
-    {
-        if (s.shape == "Circle")
-        {
-            sf::CircleShape c(s.rad);
-            c.setFillColor(sf::Color(s.r, s.g, s.b));
-            sf::Vector2f posVector(s.x, s.y);
-            c.setPosition(posVector);
-            s.circle = c;
-        }
-        else
-        {
-            sf::Vector2f sizeVector(s.width, s.height);
-            sf::RectangleShape r(sizeVector);
-            r.setFillColor(sf::Color(s.r, s.g, s.b));
-            sf::Vector2f posVector(s.x, s.y);
-            r.setPosition(posVector);
-            s.square = r;
-        }
-
-    }
-
-
-    // idea, initialize i, if first window, set window props, i+ and then loop through shapese
-
+    configure(&wWidth, &wHeight, &lines, &shapes);
 
     const sf::Vector2u win(wWidth, wHeight);
 
-    sf::RenderWindow window(sf::VideoMode(win), "SFML works!");
+    sf::RenderWindow window(sf::VideoMode(win), "Muvoksis manic makings!");
     // in Windows at least, this must be called before creating the window
     // float screenScalingFactor = platform.getScreenScalingFactor(window.getSystemHandle());
     // Use the screenScalingFactor
     platform.setIcon(window.getSystemHandle());
 
-    sf::CircleShape circle(20);
-
-    circle.setFillColor(sf::Color::White);
-
-    sf::Color circleColor = sf::Color::Yellow;
-    circle.setFillColor(circleColor);
-
-    // float circleMoveSpeedX = -0.10f;
-    // float circleMoveSpeedY = -0.10f;
     sf::Event event;
 
     // Main loop
@@ -251,32 +150,6 @@ int main()
         }
 
         window.display();
-        // sf::Vector2f previousPosition = circle.getPosition();
-        // if (previousPosition.x < 0.0f)
-        // {
-        //     circleMoveSpeedX *= -1.0f;
-        // } else if (previousPosition.x > wWidth - circle.getRadius()*2)
-        // {
-        //     circleMoveSpeedX *= -1.0f;
-        // }
-        // else if (previousPosition.x > wWidth - (circle.getRadius() * 2))
-        // {
-        //     circleMoveSpeedX *= -1.0f;
-        // }
-
-        // if (previousPosition.y < 0)
-        // {
-        //     circleMoveSpeedY *= -1.0f;
-        // }
-        // else if (previousPosition.y > wHeight - (circle.getRadius() * 2))
-        // {
-        //     circleMoveSpeedY *= -1.0f;
-        // }
-
-        // sf::Vector2f moveVector = sf::Vector2f(circleMoveSpeedX, circleMoveSpeedY * 1.1f);
-        // sf::Vector2f newPosition = previousPosition + moveVector;
-        // circle.setPosition(newPosition);
-
     }
 
     return 0;
@@ -324,7 +197,85 @@ void generateShapes(string shape, istringstream * configLine, vector<CShape> * p
     }
 }
 
-void configure(unsigned int * width, unsigned int * height)
+bool configure(unsigned int * width, unsigned int * height, vector<string> * lines, vector<CShape> * shapes)
 {
-    cout << *width << " " << *height << endl;
+    string filename("content/config");
+    string line;
+
+    // open the file
+    ifstream inFile(filename);
+    if (!inFile.is_open())
+    {
+        cerr << "Could not open the file - " << filename << endl;
+        return EXIT_FAILURE;
+    }
+    else
+    {
+        // slap all the lines to a nice vector
+        while (getline(inFile, line))
+        {
+            if(line.size() > 0)
+                lines->push_back(line);
+        }
+    }
+
+    for (auto l = lines->begin(); l != lines->end(); ++l)
+    {
+        istringstream iss(*l);
+
+        cout << "line: " << iss.str() << endl;
+    }
+
+    // go through the config lines
+    for (auto l = lines->begin(); l != lines->end(); ++l)
+    {
+        istringstream iss(*l);
+
+        do
+        {
+            string variable;
+            iss >> variable;
+
+            // If first string is Window, next two are width and height
+            if(variable == "Window")
+            {
+                iss >> variable;
+                *width = stoi(variable);
+                iss >> variable;
+                *height = stoi(variable);
+            }
+            else if(variable.length() != 0)
+            {
+                generateShapes(variable ,&iss, shapes);
+            }
+
+        } while (iss);
+
+    }
+
+    for (CShape &s: *shapes)
+    {
+        // Here it gets a little funky. As per design the config file may contain either rectangles or circles
+        // so they have different amount of parameters to play with.
+        if (s.shape == "Circle")
+        {
+            sf::CircleShape c(s.rad);
+            c.setFillColor(sf::Color(s.r, s.g, s.b));
+            sf::Vector2f posVector(s.x, s.y);
+            c.setPosition(posVector);
+            s.circle = c;
+        }
+        else
+        {
+            sf::Vector2f sizeVector(s.width, s.height);
+            sf::RectangleShape r(sizeVector);
+            r.setFillColor(sf::Color(s.r, s.g, s.b));
+            sf::Vector2f posVector(s.x, s.y);
+            r.setPosition(posVector);
+            s.square = r;
+        }
+
+    }
+
+    return true;
 }

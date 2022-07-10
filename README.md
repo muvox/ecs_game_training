@@ -39,3 +39,17 @@ Config legend:
     Outline Color       OR, OG, OB  int, int, int
     Outline Thickness   OT          int
     Shape Vertices      V           int
+
+## Tips from the master
+0. Save the config file reading till later
+1. Implement the basic functionality in the entitymanager class addEntity and update so you can start testing. Handle dead entities later.
+2. Implement basics:
+   1. construct a player using spawnPlayer
+   2. Implement basic drawing of entities in render
+   3. Spawn enemies with spawnEnemy()
+   4. spawnBullet()
+3. Implement playermovement, sUserInput and sMovement
+4. EntityManager::update() to delete dead
+5. getEntities(tag)
+6. Entity collision
+7. Score, config, etc.

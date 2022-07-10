@@ -10,8 +10,8 @@ struct BulletConfig { int SR, CR, FR, FG, FB, OR, OG, OB, OT, V, L; float S; };
 
 class Game
 {
-	sf::RenderWindow 	m_window;
-	EntityManager		m_entities;
+	sf::RenderWindow 	m_window;					//SFML Window
+	EntityManager		m_entities;					// Vector of entities
 	sf::Font			m_font;
 	sf::Text			m_text;
 	PlayerConfig		m_playerConfig;

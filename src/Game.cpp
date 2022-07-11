@@ -14,7 +14,7 @@ void Game::init(const std::string & path)
 	// TODO: 	read in config file here
 	//			use the premade playerconfig, enemyconfig and bulletconfig variables
 
-	std::ifstream fin(path);
+	// std::ifstream fin(path);
 
 	// TODO: iterate through the config
 
@@ -22,14 +22,14 @@ void Game::init(const std::string & path)
 	// TODO: enemy config
 
 	// TODO: bulletconfig
-
+	std::cout << "Conf path" << path << std::endl;
 	// PlayerConfig
-	fin >> m_playerConfig.SR >> m_playerConfig.CR
-		>> m_playerConfig.S >> m_playerConfig.FR
-		>> m_playerConfig.FG >> m_playerConfig.FB
-		>> m_playerConfig.OR >> m_playerConfig.OG
-		>> m_playerConfig.OB >> m_playerConfig.OT
-		>> m_playerConfig.V;
+	// fin >> m_playerConfig.SR >> m_playerConfig.CR
+	// 	>> m_playerConfig.S >> m_playerConfig.FR
+	// 	>> m_playerConfig.FG >> m_playerConfig.FB
+	// 	>> m_playerConfig.OR >> m_playerConfig.OG
+	// 	>> m_playerConfig.OB >> m_playerConfig.OT
+	// 	>> m_playerConfig.V;
 
 	// SR, CR, S, FR, FG, FB, OR, OG, OB, OT, V
 	const sf::Vector2u win(wWidth, wHeight);
@@ -48,6 +48,7 @@ void Game::run()
 	// TODO: 	add pause functionality
 	//			some systems should function while paused (rendering)
 	//			some systems shouldn't (move, input)
+	spawnPlayer();
 
 	while (m_running)
 	{
@@ -83,7 +84,7 @@ void Game::spawnPlayer()
 
 	// Give the entity a transform component and spawn it to 200, 200 with velocity 1 and angle 0
 	// use m_playerConfig.BLAH
-	entity->cTransform = std::make_shared<CTransform>(sf::Vector2f(200.0f, 200.0f), sf::Vector2f(1.0f, 1.0f), 0.0f);
+	entity->cTransform = std::make_shared<CTransform>(sf::Vector2f(200.0f, 200.0f), sf::Vector2f(0.0f, 0.0f), 0.0f);
 
 	// Shape component, radius 32, 8 sides, dark grey fill and red outline with thickness of 4
 	entity->cShape = std::make_shared<CShape>(32.0f, 8, sf::Color(10,10,10), sf::Color(255, 0, 0), 4.0f);
@@ -127,6 +128,7 @@ void Game::spawnSmallEnemies(ptr<Entity> e)
 
 void Game::spawnBullet(ptr<Entity> entity, const sf::Vector2f & target)
 {
+	std::cout << target.x << ", " << entity->isActive() << std::endl;
 
 	// TODO:	Implement the spawning of bullet, traveling towards target
 	//			- scalar speed, formula in notes. Speed is the number of frames
@@ -138,17 +140,20 @@ void Game::spawnBullet(ptr<Entity> entity, const sf::Vector2f & target)
 
 void Game::spawnSpecialWeapon(ptr<Entity> entity)
 {
+	std::cout << entity->cTransform->pos.x << std::endl;
 
 }
 
 void Game::sMovement()
 {
+	std::cout << "Running sMovement" << std::endl;
 	// TODO:	Implement all the entity movement
 	//			Read player->cInput for player movement
 
 	sf::Vector2f playerVelocity;
 	// Example of updating
-	// m_player->cTransform->pos.x += m_player->cTransform->velocity.x,
+	// m_player->cTransform->pos.x += m_player->cTransform->velocity.x
+	// player speed from config: m_playerConfig.S;
 	if(m_player->cInput->left)
 		playerVelocity.x -= m_playerConfig.S;
 
@@ -156,16 +161,22 @@ void Game::sMovement()
 		playerVelocity.x += m_playerConfig.S;
 
 	if(m_player->cInput->up)
-		playerVelocity.y += m_playerConfig.S;
-
-	if(m_player->cInput->down)
 		playerVelocity.y -= m_playerConfig.S;
 
-	m_player->cTransform->velocity += playerVelocity;
+	if(m_player->cInput->down)
+		playerVelocity.y += m_playerConfig.S;
+
+
+	m_player->cTransform->velocity = playerVelocity;
 
 	for (auto e: m_entities.getEntities())
 	{
-		e->cTransform->pos += e->cTransform->velocity;
+		std::cout << "Old pos: " << e->cTransform->pos.x << ", " << e->cTransform->pos.y << std::endl;
+		e->cTransform->pos.x += e->cTransform->velocity.x;
+		e->cTransform->pos.y += e->cTransform->velocity.y;
+		std::cout << "New pos: " << e->cTransform->pos.x << ", " << e->cTransform->pos.y << std::endl;
+
+
 	}
 
 	//m_player->cTransform->pos -= m_player->cTransform->velocity;
@@ -277,7 +288,7 @@ void Game::sRender()
 	}
 
 	m_window.draw(m_player->cShape->circle);
-
+	m_window.display();
 }
 
 void Game::sUserInput()
@@ -302,21 +313,27 @@ void Game::sUserInput()
 			case sf::Keyboard::W:
 				// W key
 				m_player->cInput->up = true;
+				std::cout << "W pressed" << std::endl;
 				break;
 
 			case sf::Keyboard::A:
 				// A key
 				m_player->cInput->left = true;
+				std::cout << "A pressed" << std::endl;
 				break;
 
 			case sf::Keyboard::S:
 				// S key
 				m_player->cInput->down = true;
+				std::cout << "S pressed" << std::endl;
 				break;
 
 			case sf::Keyboard::D:
 				// D key
 				m_player->cInput->right = true;
+				std::cout << "D pressed" << std::endl;
+				break;
+			default:
 				break;
 
 			}
@@ -330,36 +347,46 @@ void Game::sUserInput()
 			case sf::Keyboard::W:
 				// W key
 				m_player->cInput->up = false;
+				std::cout << "W released" << std::endl;
 				break;
 
 			case sf::Keyboard::A:
 				// A key
 				m_player->cInput->left = false;
+				std::cout << "A released" << std::endl;
+
 				break;
 
 			case sf::Keyboard::S:
 				// S key
 				m_player->cInput->down = false;
+				std::cout << "S released" << std::endl;
 				break;
 
 			case sf::Keyboard::D:
 				// D key
 				m_player->cInput->right = false;
+				std::cout << "D released" << std::endl;
+				break;
+			default:
 				break;
 
 			}
 		}
 
-		if (event.mouseButton.button == sf::Mouse::Left)
+		if (event.type == sf::Event::MouseButtonPressed)
 		{
-			std::cout << "MouseLeft pressed at: " << event.mouseButton.x  << ", " << event.mouseButton.y << std::endl;
-			// spawnbullet! player to mouse
-		}
+			if (event.mouseButton.button == sf::Mouse::Left)
+			{
+				std::cout << "MouseLeft pressed at: " << event.mouseButton.x  << ", " << event.mouseButton.y << std::endl;
+				// spawnbullet! player to mouse
+			}
 
-		if (event.mouseButton.button == sf::Mouse::Right)
-		{
-			std::cout << "MouseRight pressed at: " << event.mouseButton.x  << ", " << event.mouseButton.y << std::endl;
-			// spawnSpecialWeapon
+			if (event.mouseButton.button == sf::Mouse::Right)
+			{
+				std::cout << "MouseRight pressed at: " << event.mouseButton.x  << ", " << event.mouseButton.y << std::endl;
+				// spawnSpecialWeapon
+			}
 		}
 
 	}

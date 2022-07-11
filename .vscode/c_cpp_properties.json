@@ -46,7 +46,7 @@
         },
         {
             "name": "Win32",
-            "intelliSenseMode": "windows-gcc-x64",
+            "intelliSenseMode": "windows-gcc-x86",
             "cStandard": "c17",
             "cppStandard": "c++17",
             "compilerPath": "C:/msys64/mingw64/bin/gcc.exe",

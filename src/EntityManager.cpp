@@ -10,6 +10,13 @@ void EntityManager::update()
 	// TODO: add entities from m_entitiesToAdd to the proper location
 	//		-	add them to the vector of all entities
 	//		-	add them to the vector inside the map wth the tag as key
+	for (auto& e: m_entitiesToAdd)
+	{
+		m_entities.push_back(e);
+		m_entityMap[e->tag()].push_back(e);
+	}
+
+	m_entitiesToAdd.clear();
 
 	removeDeadEntities(m_entities);
 
@@ -23,12 +30,18 @@ void EntityManager::update()
 
 void EntityManager::removeDeadEntities(EntityVec & vec)
 {
+	for (auto e: vec)
+	{
+		if (!e->isActive())
+			e->destroy();
+	}
 	// TODO: 	check entities isActive and remove from vector
 	//			remember iteration invalidation
 }
 
 std::shared_ptr<Entity> EntityManager::addEntity(const std::string & tag)
 {
+	std::cout << "Added an entity: " << tag << std::endl;
 	auto entity = std::shared_ptr<Entity>(new Entity(m_totalEntities++, tag));
 
 	m_entitiesToAdd.push_back(entity);
@@ -39,15 +52,12 @@ std::shared_ptr<Entity> EntityManager::addEntity(const std::string & tag)
 // Get all entities
 const EntityVec & EntityManager::getEntities()
 {
+	std::cout << "Returning all entities, all :" << m_entities.size() << std::endl;
 	return m_entities;
 }
 
 // Get all entities by tag
 const EntityVec & EntityManager::getEntities(const std::string & tag)
 {
-	EntityVec foundEntities;
-
-	// TODO: look for entities with tag and return that EntityVec
-
-	return foundEntities;
+	return m_entityMap[tag];
 }

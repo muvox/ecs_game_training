@@ -5,7 +5,6 @@ Config legend:
 ## Font
 ### F S R G B
     Font File           F           std::string
-    Font Size           S           int
     Font Color          R, G, B     int, int, int
 
 ## Player Specification:

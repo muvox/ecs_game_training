@@ -9,30 +9,79 @@ Game::Game(const std::string & config)
 void Game::init(const std::string & path)
 {
 	util::Platform platform;
-	unsigned int wWidth = 640;
-    unsigned int wHeight = 480;
 	// TODO: 	read in config file here
 	//			use the premade playerconfig, enemyconfig and bulletconfig variables
 
-	// std::ifstream fin(path);
+	std::ifstream inFile(path);
+	std::string line;
+	if(!inFile.is_open())
+	{
+		std::cerr << "Could not open file: " << path << std::endl;
+	}
+	else
+	{
+		// Read window line
+		inFile >> line;
+		if (line == "Window")
+		{
+			std::cout << line << " config" << std::endl;
+			inFile >> m_wWidth >> m_wHeight >> m_frameLimit >> m_fullscreen;
+			std::cout << "Config read with resolution of " << m_wWidth << "x"
+				<< m_wHeight << ", framerate limit of: " << m_frameLimit
+				<< ", and fullscreen set to: " << m_fullscreen << std::endl;
+		}
+		else
+			std::cerr << "Could not read window config properly!" << std::endl;
 
-	// TODO: iterate through the config
+		// Read player line
+		inFile >> line;
+		if (line == "Player")
+		{
+			std::cout << "Reading player config" << std::endl;
+			inFile >> m_playerConfig.SR >> m_playerConfig.CR
+				>> m_playerConfig.S >> m_playerConfig.FR
+				>> m_playerConfig.FG >> m_playerConfig.FB
+				>> m_playerConfig.OR >> m_playerConfig.OG
+				>> m_playerConfig.OB >> m_playerConfig.OT
+				>> m_playerConfig.V;
+		}
+		else
+			std::cerr << "Could not read player config properly!" << std::endl;
 
-	// TODO: window config, w, h, fullscreen?
-	// TODO: enemy config
+		// Read enemy line
+		inFile >> line;
+		if (line == "Enemy")
+		{
+			std::cout << "Reading enemy config" << std::endl;
+			inFile >> m_enemyConfig.SR >> m_enemyConfig.CR
+				>> m_enemyConfig.SMIN >> m_enemyConfig.SMAX
+				>> m_enemyConfig.OR >> m_enemyConfig.OG
+				>> m_enemyConfig.OB >> m_enemyConfig.OT
+				>> m_enemyConfig.VMIN >> m_enemyConfig.VMAX
+				>> m_enemyConfig.L >> m_enemyConfig.SI;
 
-	// TODO: bulletconfig
-	std::cout << "Conf path" << path << std::endl;
-	// PlayerConfig
-	// fin >> m_playerConfig.SR >> m_playerConfig.CR
-	// 	>> m_playerConfig.S >> m_playerConfig.FR
-	// 	>> m_playerConfig.FG >> m_playerConfig.FB
-	// 	>> m_playerConfig.OR >> m_playerConfig.OG
-	// 	>> m_playerConfig.OB >> m_playerConfig.OT
-	// 	>> m_playerConfig.V;
+		}
+		else
+			std::cerr << "Could not read enemy config properly!" << std::endl;
+
+		// Read bullet line
+
+		inFile >> line;
+		if (line == "Bullet")
+		{
+			std::cout << "Reading bullet config" << std::endl;
+			inFile >> m_bulletConfig.SR >> m_bulletConfig.CR
+				>> m_bulletConfig.FR >> m_bulletConfig.FG
+				>> m_bulletConfig.FB >> m_bulletConfig.OR
+				>> m_bulletConfig.OG >> m_bulletConfig.OB
+				>> m_bulletConfig.V;
+		}
+		else
+			std::cerr << "Could not read bullet config properly!" << std::endl;
+	}
 
 	// SR, CR, S, FR, FG, FB, OR, OG, OB, OT, V
-	const sf::Vector2u win(wWidth, wHeight);
+	const sf::Vector2u win(m_wWidth, m_wHeight);
 	m_window.create(sf::VideoMode(win), "Game 1");
 	m_window.setFramerateLimit(m_frameLimit);
 
@@ -48,7 +97,6 @@ void Game::run()
 	// TODO: 	add pause functionality
 	//			some systems should function while paused (rendering)
 	//			some systems shouldn't (move, input)
-	spawnPlayer();
 
 	while (m_running)
 	{
@@ -83,11 +131,17 @@ void Game::spawnPlayer()
 	auto entity = m_entities.addEntity("player");
 
 	// Give the entity a transform component and spawn it to 200, 200 with velocity 1 and angle 0
-	// use m_playerConfig.BLAH
-	entity->cTransform = std::make_shared<CTransform>(sf::Vector2f(200.0f, 200.0f), sf::Vector2f(0.0f, 0.0f), 0.0f);
+	// reading from playerconfig
+	entity->cTransform = std::make_shared<CTransform>(
+		sf::Vector2f((float)m_wWidth/2, (float)m_wHeight/2),
+		sf::Vector2f(0.0f, 0.0f), 0.0f);
 
 	// Shape component, radius 32, 8 sides, dark grey fill and red outline with thickness of 4
-	entity->cShape = std::make_shared<CShape>(32.0f, 8, sf::Color(10,10,10), sf::Color(255, 0, 0), 4.0f);
+	entity->cShape = std::make_shared<CShape>(
+		m_playerConfig.SR, m_playerConfig.V,
+		sf::Color(m_playerConfig.FR,m_playerConfig.FG,m_playerConfig.FB),
+		sf::Color(m_playerConfig.OR, m_playerConfig.OG, m_playerConfig.OB),
+		m_playerConfig.OT);
 
 	// Input component so we can move the player
 	entity->cInput = std::make_shared<CInput>();
@@ -102,10 +156,57 @@ void Game::spawnPlayer()
 // spawn enemy to random location (within bounds of the game window)
 void Game::spawnEnemy()
 {
+	std::cout << "Creating enemy! " << std::endl;
+	// Add entity via entitymanager
+	auto entity = m_entities.addEntity("enemy");
 
-	// TODO:	make sure the enemy is spawned properly according to enemyConfig variables
+	// We have to randomize enemy spawning
+	// Define max and min range within window, considering collision radius
+	int spawnXMax = m_wWidth - m_enemyConfig.CR;
+	int spawnXMin = m_enemyConfig.CR * 2;
+	int spawnYMax = m_wHeight - m_enemyConfig.CR;
+	int spawnYMin = m_enemyConfig.CR * 2;
 
+	// set the rande for the spawn zone
+	int rangeX = spawnXMax - spawnXMin -1;
+	int rangeY = spawnYMax - spawnYMin -1;
+
+	// randomize within range
+	int spawnX = rand() % rangeX + spawnXMin;
+	int spawnY = rand() % rangeY + spawnYMin;
+
+	// randomize enemy speed
+	int xSpeed = rand() % ((int)m_enemyConfig.SMAX*2 + 1) - ((int)m_enemyConfig.SMIN);
+	int ySpeed = rand() % ((int)m_enemyConfig.SMAX*2 + 1) - ((int)m_enemyConfig.SMIN);
+
+	std::cout << "Enemy X speed: " << xSpeed << " and Y speed: " << ySpeed << std::endl;
+
+	// Give entity a transform so it has a position, velocity and angle
+	entity->cTransform = std::make_shared<CTransform>(
+		sf::Vector2f(spawnX, spawnY),
+		sf::Vector2f((float)xSpeed, (float)ySpeed), 0.0f);
+
+	// randomize the number of points the enemy has
+	int pointRange = m_enemyConfig.VMAX - m_enemyConfig.VMIN -1;
+	int numberOfPoints = rand() % pointRange + m_enemyConfig.VMIN;
+
+	// Give entity a shape
+	// randomize fill colors
+	m_enemyConfig.FR = rand() % 255 + 1;
+	m_enemyConfig.FG = rand() % 255 + 1;
+	m_enemyConfig.FB = rand() % 255 + 1;
+
+	entity->cShape = std::make_shared<CShape>(
+		m_enemyConfig.SR, numberOfPoints,
+		sf::Color(m_enemyConfig.FR, m_enemyConfig.FG, m_enemyConfig.FB),
+		sf::Color(m_enemyConfig.OR, m_enemyConfig.OG, m_enemyConfig.OB),
+		m_enemyConfig.OT
+	);
+
+	std::cout << "Enemy created!" << std::endl;
 	m_lastEnemySpawnTime = m_currentFrame;
+	std::cout << "Current frame set!" << std::endl;
+
 }
 
 // Spawn tiny enemies when big one dies
@@ -116,7 +217,7 @@ void Game::spawnSmallEnemies(ptr<Entity> e)
 
 	// When creating smaller enemies, read the parameters of the original
 	// spawn as many small ones as the original had points
-	// small ones the same color as "host", half size
+	// small ones the me color as "host", half size
 	// reward double points than the big one
 	for (int i = 0; i < points; i++)
 	{
@@ -146,7 +247,6 @@ void Game::spawnSpecialWeapon(ptr<Entity> entity)
 
 void Game::sMovement()
 {
-	std::cout << "Running sMovement" << std::endl;
 	// TODO:	Implement all the entity movement
 	//			Read player->cInput for player movement
 
@@ -171,12 +271,10 @@ void Game::sMovement()
 
 	for (auto e: m_entities.getEntities())
 	{
-		std::cout << "Old pos: " << e->cTransform->pos.x << ", " << e->cTransform->pos.y << std::endl;
+		// std::cout << "Old pos: " << e->cTransform->pos.x << ", " << e->cTransform->pos.y << std::endl;
 		e->cTransform->pos.x += e->cTransform->velocity.x;
 		e->cTransform->pos.y += e->cTransform->velocity.y;
-		std::cout << "New pos: " << e->cTransform->pos.x << ", " << e->cTransform->pos.y << std::endl;
-
-
+		// std::cout << "New pos: " << e->cTransform->pos.x << ", " << e->cTransform->pos.y << std::endl;
 	}
 
 	//m_player->cTransform->pos -= m_player->cTransform->velocity;
@@ -208,53 +306,54 @@ void Game::sCollision()
 {
 	// Enemy/Player collision
 	for(auto p : m_entities.getEntities("player"))
-		for(auto e : m_entities.getEntities("enemy"))
-		{
-			sf::Vector2f pPos = p->cTransform->pos;
-			sf::Vector2f ePos = e->cTransform->pos;
+	{
+		// for(auto e : m_entities.getEntities("enemy"))
+		// {
+		// 	sf::Vector2f pPos = p->cTransform->pos;
+		// 	sf::Vector2f ePos = e->cTransform->pos;
 
-			sf::Vector2f diffVec = pPos - ePos;
+		// 	sf::Vector2f diffVec = pPos - ePos;
 
-			float distSq = diffVec.x*diffVec.x + diffVec.y*diffVec.y;
-			float pRad = p->cCollision->radius;
-			float eRad = e->cCollision->radius;
+		// 	float distSq = diffVec.x*diffVec.x + diffVec.y*diffVec.y;
+		// 	float pRad = p->cCollision->radius;
+		// 	float eRad = e->cCollision->radius;
 
-			if ( distSq < (pRad + eRad)*(pRad + eRad))
-			{
-				e->destroy();
-				p->destroy();
-				//This means collision
-			}
+		// 	if ( distSq < (pRad + eRad)*(pRad + eRad))
+		// 	{
+		// 		e->destroy();
+		// 		p->destroy();
+		// 		//This means collision
+		// 	}
 
-		}
-
+		// }
+	}
 	// Enemy/Bullet collision
 	for(auto b : m_entities.getEntities("bullet"))
-		for(auto e : m_entities.getEntities("enemy"))
-		{
-			sf::Vector2f pPos = b->cTransform->pos;
-			sf::Vector2f ePos = e->cTransform->pos;
+	{
+		// for(auto e : m_entities.getEntities("enemy"))
+		// {
+		// 	sf::Vector2f pPos = b->cTransform->pos;
+		// 	sf::Vector2f ePos = e->cTransform->pos;
 
-			sf::Vector2f diffVec = pPos - ePos;
+		// 	sf::Vector2f diffVec = pPos - ePos;
 
-			float distSq = diffVec.x*diffVec.x + diffVec.y*diffVec.y;
-			float bRad = b->cCollision->radius;
-			float eRad = e->cCollision->radius;
+		// 	float distSq = diffVec.x*diffVec.x + diffVec.y*diffVec.y;
+		// 	float bRad = b->cCollision->radius;
+		// 	float eRad = e->cCollision->radius;
 
-			if ( distSq < (bRad + eRad)*(bRad + eRad))
-			{
-				e->destroy();
-				b->destroy();
-				//This means collision
-			}
-
-
-			// If collision between e and p
-			// p->cCollision->radius
-			// p->cTransform->position
-		}
+		// 	if ( distSq < (bRad + eRad)*(bRad + eRad))
+		// 	{
+		// 		e->destroy();
+		// 		b->destroy();
+		// 		//This means collision
+		// 	}
 
 
+		// 	// If collision between e and p
+		// 	// p->cCollision->radius
+		// 	// p->cTransform->position
+		// }
+	}
 	// TODO: Implement all proper collision between entities
 	//			use collision radius, not shape radius.
 
@@ -263,6 +362,14 @@ void Game::sCollision()
 void Game::sEnemySpawner()
 {
 	// TODO: enemy spawning
+
+	if ((m_currentFrame - m_lastEnemySpawnTime) > m_enemyConfig.SI )
+	{
+		spawnEnemy();
+		std::cout << "Enemy spawned" <<  std::endl;
+
+	}
+
 
 	// m_currentFrame - m_lastEnemySpawnTime since last enemy spawned
 	// read from the config
@@ -273,21 +380,24 @@ void Game::sRender()
 	// TODO: chanmge the code below to draw all of the enemies (for ents in getEnts)
 	m_window.clear();
 
-	//SFML 3.0 doesn't allow 2 floats to create a vector upon setPosition
-	sf::Vector2f pPosVec(m_player->cTransform->pos.x, m_player->cTransform->pos.y);
+	for(auto ent: m_entities.getEntities()){
+		// Basic movement
+		//SFML 3.0 doesn't allow 2 floats to create a vector upon setPosition
+		sf::Vector2f pPosVec(ent->cTransform->pos.x, ent->cTransform->pos.y);
+		ent->cShape->circle.setPosition(pPosVec);
 
-	m_player->cShape->circle.setPosition(pPosVec);
+		// rotation
+		// NOTE: 	rotation works with wonky angles now. Create a new rotation
+		// 			give it sf::degrees or sf::radian as a value and use the rotate function
+		sf::Angle newRot(sf::degrees(1.0f));
+		if (!m_paused)
+		{
+			ent->cShape->circle.rotate(newRot);
+		}
+		m_window.draw(ent->cShape->circle);
 
-	m_player->cTransform->angle += 1.0f;
-
-	// player rotation
-	if (!m_paused)
-	{
-		sf::Angle newAngle(m_player->cShape->circle.getRotation());
-		m_player->cShape->circle.setRotation(newAngle);
 	}
 
-	m_window.draw(m_player->cShape->circle);
 	m_window.display();
 }
 

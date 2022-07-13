@@ -6,6 +6,7 @@
 #include <SFML/Network.hpp>
 #include <SFML/System.hpp>
 #include <SFML/Window.hpp>
+#include <SFML/System/Angle.hpp>
 
 #include <vector>
 #include <iostream>

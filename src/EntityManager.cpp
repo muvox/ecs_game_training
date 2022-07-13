@@ -7,9 +7,6 @@ EntityManager::EntityManager()
 
 void EntityManager::update()
 {
-	// TODO: add entities from m_entitiesToAdd to the proper location
-	//		-	add them to the vector of all entities
-	//		-	add them to the vector inside the map wth the tag as key
 	for (auto& e: m_entitiesToAdd)
 	{
 		m_entities.push_back(e);
@@ -52,7 +49,7 @@ std::shared_ptr<Entity> EntityManager::addEntity(const std::string & tag)
 // Get all entities
 const EntityVec & EntityManager::getEntities()
 {
-	std::cout << "Returning all entities, all :" << m_entities.size() << std::endl;
+	// std::cout << "Returning all entities, all :" << m_entities.size() << std::endl;
 	return m_entities;
 }
 

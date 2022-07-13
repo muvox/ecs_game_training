@@ -5,7 +5,7 @@
 #include "EntityManager.h"
 
 struct PlayerConfig { int SR, CR, FR, FG, FB, OR, OG, OB, OT, V; float S = 5.0f; };
-struct EnemyConfig { int SR, CR, OR, OG, OB, OT, VMIN, VMAX, L, SI; float SMIN, SMAX; };
+struct EnemyConfig { int SR, CR, FR, FG, FB,OR, OG, OB, OT, VMIN, VMAX, L, SI; float SMIN, SMAX; };
 struct BulletConfig { int SR, CR, FR, FG, FB, OR, OG, OB, OT, V, L; float S; };
 
 class Game
@@ -21,6 +21,9 @@ class Game
 	int					m_currentFrame = 0;
 	int					m_lastEnemySpawnTime = 0;
 	int					m_frameLimit = 60;
+	int					m_wWidth = 1280;
+	int					m_wHeight = 720;
+	bool				m_fullscreen = false;
 	bool				m_paused = false;
 	bool				m_running = true;
 

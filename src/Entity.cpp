@@ -23,5 +23,6 @@ const size_t Entity::id() const
 
 void Entity::destroy()
 {
+	std::cout << "Entity set to false" << m_tag << std::endl;
 	m_active = false;
 }

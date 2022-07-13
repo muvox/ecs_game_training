@@ -146,6 +146,9 @@ void Game::spawnPlayer()
 	// Input component so we can move the player
 	entity->cInput = std::make_shared<CInput>();
 
+	// collision component
+	entity->cCollision = std::make_shared<CCollision>(m_playerConfig.SR);
+
 	// Set the Game objects player the entity.
 	// NOTE: 	Goes slightly against the EntityManager paradigm, but the player is used so often
 	//			that this makes it easier.
@@ -179,8 +182,6 @@ void Game::spawnEnemy()
 	int xSpeed = rand() % ((int)m_enemyConfig.SMAX*2 + 1) - ((int)m_enemyConfig.SMIN);
 	int ySpeed = rand() % ((int)m_enemyConfig.SMAX*2 + 1) - ((int)m_enemyConfig.SMIN);
 
-	std::cout << "Enemy X speed: " << xSpeed << " and Y speed: " << ySpeed << std::endl;
-
 	// Give entity a transform so it has a position, velocity and angle
 	entity->cTransform = std::make_shared<CTransform>(
 		sf::Vector2f(spawnX, spawnY),
@@ -203,9 +204,10 @@ void Game::spawnEnemy()
 		m_enemyConfig.OT
 	);
 
-	std::cout << "Enemy created!" << std::endl;
+	// collision component
+	entity->cCollision = std::make_shared<CCollision>(m_enemyConfig.SR);
+
 	m_lastEnemySpawnTime = m_currentFrame;
-	std::cout << "Current frame set!" << std::endl;
 
 }
 
@@ -271,6 +273,19 @@ void Game::sMovement()
 
 	for (auto e: m_entities.getEntities())
 	{
+		if(e->tag() == "enemy")
+		{
+			sf::Vector2f previousPosition = e->cTransform->pos;
+			if (previousPosition.x <= 0.0+e->cShape->circle.getRadius())
+				e->cTransform->velocity.x *= -1.0f;
+			else if (previousPosition.x >= m_wWidth - e->cShape->circle.getRadius())
+				e->cTransform->velocity.x *= -1.0f;
+
+			if (previousPosition.y <= 0.0 + e->cShape->circle.getRadius())
+				e->cTransform->velocity.y *= -1.0f;
+			else if (previousPosition.y >= m_wHeight - e->cShape->circle.getRadius())
+				e->cTransform->velocity.y *= -1.0f;
+		}
 		// std::cout << "Old pos: " << e->cTransform->pos.x << ", " << e->cTransform->pos.y << std::endl;
 		e->cTransform->pos.x += e->cTransform->velocity.x;
 		e->cTransform->pos.y += e->cTransform->velocity.y;
@@ -307,25 +322,29 @@ void Game::sCollision()
 	// Enemy/Player collision
 	for(auto p : m_entities.getEntities("player"))
 	{
-		// for(auto e : m_entities.getEntities("enemy"))
-		// {
-		// 	sf::Vector2f pPos = p->cTransform->pos;
-		// 	sf::Vector2f ePos = e->cTransform->pos;
+		sf::Vector2f pPos = p->cTransform->pos;
 
-		// 	sf::Vector2f diffVec = pPos - ePos;
+		for(auto e : m_entities.getEntities("enemy"))
+		{
+			sf::Vector2f ePos = e->cTransform->pos;
+			sf::Vector2f diffVec = pPos - ePos;
 
-		// 	float distSq = diffVec.x*diffVec.x + diffVec.y*diffVec.y;
-		// 	float pRad = p->cCollision->radius;
-		// 	float eRad = e->cCollision->radius;
+			float distSq = diffVec.x*diffVec.x + diffVec.y*diffVec.y;
+			float pRad = p->cCollision->radius;
+			float eRad = e->cCollision->radius;
 
-		// 	if ( distSq < (pRad + eRad)*(pRad + eRad))
-		// 	{
-		// 		e->destroy();
-		// 		p->destroy();
-		// 		//This means collision
-		// 	}
+			if ( distSq < ((pRad + eRad) * (pRad + eRad)))
+			{
+				std::cout << "collision if" << std::endl;
 
-		// }
+				e->destroy();
+				p->destroy();
+				//This means collision
+			}
+
+			std::cout << "Checked for collision" << std::endl;
+
+		}
 	}
 	// Enemy/Bullet collision
 	for(auto b : m_entities.getEntities("bullet"))

@@ -10,7 +10,8 @@ class EntityManager
 {
 	EntityVec 	m_entities;						// Vector containing all entities
 	EntityVec 	m_entitiesToAdd;				// Vector of entities we want to add in the next iteration
-	EntityMap 	m_entityMap;					// Map of tags to entities
+	EntityMap 	m_entityMap;
+	EntityVec	m_entitiesToRemove;					// Map of tags to entities
 	size_t		m_totalEntities = 0;			// Total number of entities to give unique identifiers
 
 	void removeDeadEntities(EntityVec & vec);	//

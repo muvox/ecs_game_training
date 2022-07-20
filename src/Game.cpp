@@ -110,6 +110,9 @@ void Game::run()
 		sUserInput();
 		sRender();
 
+		if (!m_player->isActive())
+			spawnPlayer();
+
 		m_currentFrame++;
 
 	}
@@ -232,6 +235,45 @@ void Game::spawnSmallEnemies(ptr<Entity> e)
 void Game::spawnBullet(ptr<Entity> entity, const sf::Vector2f & target)
 {
 	std::cout << target.x << ", " << entity->isActive() << std::endl;
+
+	auto bullet = m_entities.addEntity("bullet");
+
+
+	// We have to randomize enemy spawning
+	// Define max and min range within window, considering collision radius
+	// int spawnXMax = m_wWidth - m_enemyConfig.CR;
+	// int spawnXMin = m_enemyConfig.CR * 2;
+	// int spawnYMax = m_wHeight - m_enemyConfig.CR;
+	// int spawnYMin = m_enemyConfig.CR * 2;
+
+	// randomize enemy speed
+	int speed = m_bulletConfig.S;
+
+	// Give entity a transform so it has a position, velocity and angle
+	bullet->cTransform = std::make_shared<CTransform>(
+		sf::Vector2f(m_player->cTransform->pos),
+		sf::Vector2f((float)speed, (float)speed), 0.0f);
+
+	// randomize the number of points the enemy has
+	int pointRange = m_enemyConfig.VMAX - m_enemyConfig.VMIN -1;
+	int numberOfPoints = rand() % pointRange + m_enemyConfig.VMIN;
+
+	// Give entity a shape
+	// randomize fill colors
+	m_enemyConfig.FR = rand() % 255 + 1;
+	m_enemyConfig.FG = rand() % 255 + 1;
+	m_enemyConfig.FB = rand() % 255 + 1;
+
+	bullet->cShape = std::make_shared<CShape>(
+		m_enemyConfig.SR, numberOfPoints,
+		sf::Color(m_enemyConfig.FR, m_enemyConfig.FG, m_enemyConfig.FB),
+		sf::Color(m_enemyConfig.OR, m_enemyConfig.OG, m_enemyConfig.OB),
+		m_enemyConfig.OT
+	);
+
+	// collision component
+	bullet->cCollision = std::make_shared<CCollision>(m_enemyConfig.SR);
+
 
 	// TODO:	Implement the spawning of bullet, traveling towards target
 	//			- scalar speed, formula in notes. Speed is the number of frames

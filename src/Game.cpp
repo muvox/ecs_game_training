@@ -71,10 +71,11 @@ void Game::init(const std::string & path)
 		{
 			std::cout << "Reading bullet config" << std::endl;
 			inFile >> m_bulletConfig.SR >> m_bulletConfig.CR
-				>> m_bulletConfig.FR >> m_bulletConfig.FG
-				>> m_bulletConfig.FB >> m_bulletConfig.OR
-				>> m_bulletConfig.OG >> m_bulletConfig.OB
-				>> m_bulletConfig.V;
+				>> m_bulletConfig.S	>> m_bulletConfig.FR
+				>> m_bulletConfig.FG >> m_bulletConfig.FB
+				>> m_bulletConfig.OR >> m_bulletConfig.OG
+				>> m_bulletConfig.OB >> m_bulletConfig.OT
+				>> m_bulletConfig.V >> m_bulletConfig.L;
 		}
 		else
 			std::cerr << "Could not read bullet config properly!" << std::endl;
@@ -238,41 +239,24 @@ void Game::spawnBullet(ptr<Entity> entity, const sf::Vector2f & target)
 
 	auto bullet = m_entities.addEntity("bullet");
 
+	// set bullet speed
+	float directionAngle = atan2((target.y - entity->cTransform->pos.y ), ( target.x - entity->cTransform->pos.x ));
 
-	// We have to randomize enemy spawning
-	// Define max and min range within window, considering collision radius
-	// int spawnXMax = m_wWidth - m_enemyConfig.CR;
-	// int spawnXMin = m_enemyConfig.CR * 2;
-	// int spawnYMax = m_wHeight - m_enemyConfig.CR;
-	// int spawnYMin = m_enemyConfig.CR * 2;
-
-	// randomize enemy speed
-	int speed = m_bulletConfig.S;
-
+	sf::Vector2f directionVelocity(m_bulletConfig.S * cos(directionAngle), m_bulletConfig.S * sin(directionAngle));
 	// Give entity a transform so it has a position, velocity and angle
 	bullet->cTransform = std::make_shared<CTransform>(
 		sf::Vector2f(m_player->cTransform->pos),
-		sf::Vector2f((float)speed, (float)speed), 0.0f);
-
-	// randomize the number of points the enemy has
-	int pointRange = m_enemyConfig.VMAX - m_enemyConfig.VMIN -1;
-	int numberOfPoints = rand() % pointRange + m_enemyConfig.VMIN;
-
-	// Give entity a shape
-	// randomize fill colors
-	m_enemyConfig.FR = rand() % 255 + 1;
-	m_enemyConfig.FG = rand() % 255 + 1;
-	m_enemyConfig.FB = rand() % 255 + 1;
+		directionVelocity, 0.0F);
 
 	bullet->cShape = std::make_shared<CShape>(
-		m_enemyConfig.SR, numberOfPoints,
-		sf::Color(m_enemyConfig.FR, m_enemyConfig.FG, m_enemyConfig.FB),
-		sf::Color(m_enemyConfig.OR, m_enemyConfig.OG, m_enemyConfig.OB),
-		m_enemyConfig.OT
+		m_bulletConfig.SR, m_bulletConfig.V,
+		sf::Color(m_bulletConfig.FR, m_bulletConfig.FG, m_bulletConfig.FB),
+		sf::Color(m_bulletConfig.OR, m_bulletConfig.OG, m_bulletConfig.OB),
+		m_bulletConfig.OT
 	);
 
 	// collision component
-	bullet->cCollision = std::make_shared<CCollision>(m_enemyConfig.SR);
+	bullet->cCollision = std::make_shared<CCollision>(m_bulletConfig.SR);
 
 
 	// TODO:	Implement the spawning of bullet, traveling towards target
@@ -391,29 +375,29 @@ void Game::sCollision()
 	// Enemy/Bullet collision
 	for(auto b : m_entities.getEntities("bullet"))
 	{
-		// for(auto e : m_entities.getEntities("enemy"))
-		// {
-		// 	sf::Vector2f pPos = b->cTransform->pos;
-		// 	sf::Vector2f ePos = e->cTransform->pos;
+		for(auto e : m_entities.getEntities("enemy"))
+		{
+			sf::Vector2f pPos = b->cTransform->pos;
+			sf::Vector2f ePos = e->cTransform->pos;
 
-		// 	sf::Vector2f diffVec = pPos - ePos;
+			sf::Vector2f diffVec = pPos - ePos;
 
-		// 	float distSq = diffVec.x*diffVec.x + diffVec.y*diffVec.y;
-		// 	float bRad = b->cCollision->radius;
-		// 	float eRad = e->cCollision->radius;
+			float distSq = diffVec.x*diffVec.x + diffVec.y*diffVec.y;
+			float bRad = b->cCollision->radius;
+			float eRad = e->cCollision->radius;
 
-		// 	if ( distSq < (bRad + eRad)*(bRad + eRad))
-		// 	{
-		// 		e->destroy();
-		// 		b->destroy();
-		// 		//This means collision
-		// 	}
+			if ( distSq < (bRad + eRad)*(bRad + eRad))
+			{
+				e->destroy();
+				b->destroy();
+				//This means collision
+			}
 
 
-		// 	// If collision between e and p
-		// 	// p->cCollision->radius
-		// 	// p->cTransform->position
-		// }
+			// If collision between e and p
+			// p->cCollision->radius
+			// p->cTransform->position
+		}
 	}
 	// TODO: Implement all proper collision between entities
 	//			use collision radius, not shape radius.
@@ -550,6 +534,8 @@ void Game::sUserInput()
 			if (event.mouseButton.button == sf::Mouse::Left)
 			{
 				std::cout << "MouseLeft pressed at: " << event.mouseButton.x  << ", " << event.mouseButton.y << std::endl;
+				sf::Vector2f targetVector(event.mouseButton.x, event.mouseButton.y);
+				spawnBullet(m_player, targetVector);
 				// spawnbullet! player to mouse
 			}
 

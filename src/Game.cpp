@@ -83,7 +83,7 @@ void Game::init(const std::string & path)
 
 	// SR, CR, S, FR, FG, FB, OR, OG, OB, OT, V
 	const sf::Vector2u win(m_wWidth, m_wHeight);
-	m_window.create(sf::VideoMode(win), "Game 1");
+	m_window.create(sf::VideoMode(win), "Muvoksis manic makings!");
 	m_window.setFramerateLimit(m_frameLimit);
 
 	// SFML Boilerplate stuff
@@ -368,7 +368,7 @@ void Game::sCollision()
 				//This means collision
 			}
 
-			std::cout << "Checked for collision" << std::endl;
+			// std::cout << "Checked for collision" << std::endl;
 
 		}
 	}
